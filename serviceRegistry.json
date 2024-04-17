@@ -1,1 +1,1 @@
-{"services":{"userapi":{"api":"userapi","host":"http://localhost","port":3008,"url":"http://localhost:3008"}}}
+{"services":{"auth":{"service":"auth","host":"http://localhost","port":3006,"url":"http://localhost:3006"},"worker":{"service":"worker","host":"http://localhost","port":3007,"url":"http://localhost:3007"},"user":{"service":"user","host":"http://localhost","port":3008,"url":"http://localhost:3008"}}}

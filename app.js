@@ -24,7 +24,7 @@ app.post("/register", async(req, res)=>{
         const serviceRegistry = JSON.parse(serviceRegistryFile);
         const services = serviceRegistry.services;  
 
-        services[registryInfo.api] = {...registryInfo};
+        services[registryInfo.service] = {...registryInfo};
         await writeFile("./serviceRegistry.json", JSON.stringify(serviceRegistry));
         res.json({msg:"registered"});
 
@@ -33,21 +33,26 @@ app.post("/register", async(req, res)=>{
     }
 });
 
-app.all("/:api/:path", async(req, res)=>{
+app.all("/api/:service/:endpoint?", async(req, res)=>{
 
-    const api = req.params.api;
-    const path = req.params.path;
+    const service = req.params.service;
+    const endpoint = req.params["endpoint"];
 
     try{
         const serviceRegistryFile = await readFile("./serviceRegistry.json","utf8");
         const serviceRegistry = JSON.parse(serviceRegistryFile);
         const services = serviceRegistry.services;  
 
-        if(!services[api]){
-            return res.send("api does not exist");
+        if(!services[service]){
+            return res.send("service does not exist");
         }
 
-        const apiUrl = services[api].url + "/" + api + "/" + path;
+        let serviceEndpoint;
+
+        if(endpoint) 
+            serviceEndpoint =  `${services[service].url}/api/${services[service].service}/${endpoint}`;
+        else
+            serviceEndpoint = `${services[service].url}/api/${services[service].service}`;
 
         const fetchOptions = {
             method: req.method,
@@ -58,19 +63,21 @@ app.all("/:api/:path", async(req, res)=>{
             credentials: "include",
         }
 
-        if(req.body){
-            fetchOptions.data = JSON.stringify(req.body);
+        if(Object.keys(req.body).length > 0){
+            fetchOptions.body = JSON.stringify(req.body);
         }
+        console.log(fetchOptions)
 
-        const  apiResponse = await fetch(apiUrl, fetchOptions);
+        const  serviceResponse = await fetch(serviceEndpoint, fetchOptions);
+        const serviceData = await serviceResponse.json();
 
-        const apiData = await apiResponse.json();
+        console.log(serviceData)
     
-        return res.json(apiData);
+        return res.status(200).json(serviceData);
 
     }catch(e){
 
-        return res.status(500).send("internal server error");
+        return res.status(500).json({msg:"internal server error"});
 
     }
 });
