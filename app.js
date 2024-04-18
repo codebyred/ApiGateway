@@ -10,7 +10,7 @@ app.use(cors(
         origin:[
             "http://localhost:5173",
             "http://localhost:5174",
-            "http://localhost:3008",
+            "http://localhost:3000",
         ]
     }
 ));
@@ -66,12 +66,9 @@ app.all("/api/:service/:endpoint?", async(req, res)=>{
         if(Object.keys(req.body).length > 0){
             fetchOptions.body = JSON.stringify(req.body);
         }
-        console.log(fetchOptions)
 
         const  serviceResponse = await fetch(serviceEndpoint, fetchOptions);
         const serviceData = await serviceResponse.json();
-
-        console.log(serviceData)
     
         return res.status(200).json(serviceData);
 
@@ -84,6 +81,6 @@ app.all("/api/:service/:endpoint?", async(req, res)=>{
 
 
 
-app.listen(3000,()=>{
+app.listen(3020,()=>{
     console.log("gateway server started")
 });
