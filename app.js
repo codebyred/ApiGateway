@@ -33,6 +33,7 @@ app.post("/register", async(req, res)=>{
     }
 });
 
+
 app.all("/api/:service/:endpoint?", async(req, res)=>{
 
     const service = req.params.service;
@@ -43,9 +44,9 @@ app.all("/api/:service/:endpoint?", async(req, res)=>{
         const serviceRegistry = JSON.parse(serviceRegistryFile);
         const services = serviceRegistry.services;  
 
-        if(!services[service]){
+        if(!services[service])
             return res.send("service does not exist");
-        }
+        
 
         let serviceEndpoint;
 
@@ -53,6 +54,12 @@ app.all("/api/:service/:endpoint?", async(req, res)=>{
             serviceEndpoint =  `${services[service].url}/api/${services[service].service}/${endpoint}`;
         else
             serviceEndpoint = `${services[service].url}/api/${services[service].service}`;
+
+        if(req.query?.clientId){
+            serviceEndpoint = `${serviceEndpoint}?clientId=${req.query?.clientId}`
+        }
+            
+    
 
         const fetchOptions = {
             method: req.method,
@@ -69,6 +76,8 @@ app.all("/api/:service/:endpoint?", async(req, res)=>{
 
         const  serviceResponse = await fetch(serviceEndpoint, fetchOptions);
         const serviceData = await serviceResponse.json();
+
+        
     
         return res.status(200).json(serviceData);
 
