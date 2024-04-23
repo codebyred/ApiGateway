@@ -54,7 +54,29 @@ app.post("/api/booking/success/:bookingId", async (req, res)=>{
         return res.redirect("http://localhost:3000/payment/success");
     }catch(e){
         console.log(e);
+        return res.redirect("http://localhost:3000");
+    }
+    
+})
+
+app.post("/api/booking/fail", async (req, res)=>{
+    try{
+        const serviceRegistryFile = await readFile("./serviceRegistry.json","utf8");
+        const serviceRegistry = JSON.parse(serviceRegistryFile);
+        const services = serviceRegistry.services; 
+        await fetch(`${services["booking"].url}/api/booking/fail`,
+        {
+            method:"POST",
+            headers:{
+                "Content-type":"application/json"
+            },
+            body: JSON.stringify(req.body)
+        });
+
         return res.redirect("http://localhost:3000/payment/fail");
+    }catch(e){
+        console.log(e);
+        return res.redirect("http://localhost:3000");
     }
     
     
