@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors"
-import {readFile, writeFile} from "fs/promises";
-import { write } from "fs";
+import {readFile, writeFile} from "fs/promises"
+import { v4 as uuidv4 } from "uuid";
+
+
 
 const app = express();
 
@@ -34,6 +36,31 @@ app.post("/register", async(req, res)=>{
 });
 
 
+
+app.post("/api/booking/success/:bookingId", async (req, res)=>{
+    try{
+        const serviceRegistryFile = await readFile("./serviceRegistry.json","utf8");
+        const serviceRegistry = JSON.parse(serviceRegistryFile);
+        const services = serviceRegistry.services; 
+        await fetch(`${services["booking"].url}/api/booking/success/${req.params.bookingId}`,
+        {
+            method:"POST",
+            headers:{
+                "Content-type":"application/json"
+            },
+            body: JSON.stringify(req.body)
+        });
+
+        return res.redirect("http://localhost:3000/payment/success");
+    }catch(e){
+        console.log(e);
+        return res.redirect("http://localhost:3000/payment/fail");
+    }
+    
+    
+})
+
+
 app.all("/api/:service/:endpoint?", async(req, res)=>{
 
     const service = req.params.service;
@@ -45,7 +72,7 @@ app.all("/api/:service/:endpoint?", async(req, res)=>{
         const services = serviceRegistry.services;  
 
         if(!services[service])
-            return res.send("service does not exist");
+            throw new Error("service does not exist");
         
 
         let serviceEndpoint;
@@ -83,7 +110,7 @@ app.all("/api/:service/:endpoint?", async(req, res)=>{
 
     }catch(e){
 
-        return res.status(500).json({msg:"internal server error"});
+        return res.status(500).json({msg:"gateway server error"});
 
     }
 });
